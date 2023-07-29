@@ -1,0 +1,47 @@
+version: "3.5"
+services:
+  optimization_app:
+    build: .
+    image: "optimization_app:1"
+    container_name: "optimization_app"
+    command: >
+      sh -c "cd src &&
+             python3 manage.py migrate --no-input &&
+             python3 manage.py createadmin &&
+             python3 manage.py runserver 0.0.0.0:8080"
+    ports:
+      - '8080:8080'
+    networks:
+      backend:
+    environment:
+      - DB_NAME=optimization_app
+      - DB_USER=optimization_app
+      - DB_PASSWORD=12345678
+      - DB_HOST=database
+      - DB_PORT=5432
+      - ADMIN_NAME=adm2
+      - ADMIN_PASSWORD=adm2
+    volumes:
+      - ./src:/service/src
+    restart: unless-stopped
+    depends_on:
+      - database
+  database:
+      image: "postgres:13"
+      container_name: "db_postgres"
+      command: ["postgres", "-c", "log_statement=all",
+                "-c", "log_destination=stderr"]
+      networks:
+        backend:
+      environment:
+        - POSTGRES_DB=optimization_app
+        - POSTGRES_USER=optimization_app
+        - POSTGRES_PASSWORD=12345678
+      volumes:
+         - postgres:/var/lib/postgresql/data
+      restart: unless-stopped
+volumes:
+  postgres:
+networks:
+  backend:
+    driver: bridge
