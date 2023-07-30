@@ -18,6 +18,9 @@ class Client(models.Model):
 
     objects = ClientManager()
 
-    def __str__(self):
+    def __str__(self) -> str:
         user = cast(User, self.user)
         return user.username
+
+
+

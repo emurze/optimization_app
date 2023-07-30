@@ -14,23 +14,24 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-
-    # client_name = serializers.CharField(source='client.user.username')
-    # client_address = serializers.CharField(source='client.full_address')
-    # email = serializers.CharField(source='client.user.email')
-    client = ClientSerializer(many=False)
-
+    client = ClientSerializer()
     service = serializers.CharField(source='service.title')
     tariff_plan = serializers.CharField(source='tariff_plan.title')
+    # price = serializers.CharField(source='service.price')
+    # discount = serializers.CharField(source='tariff_plan.discount_percent')
+    # clean_price = serializers.SerializerMethodField()
+    #
+    # @staticmethod
+    # def get_clean_price(instance: Subscription) -> int:
+    #     discount = instance.tariff_plan.discount_percent
+    #     return instance.service.price * (1 - discount // 100)
 
     class Meta:
         model = Subscription
         fields = (
             'client_id',
             'client',
-            # 'client_address', 
-            # 'client_name', 
-            # 'email',
             'service',
             'tariff_plan',
+            'price',
         )

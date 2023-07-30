@@ -26,6 +26,7 @@ services:
     restart: unless-stopped
     depends_on:
       - database
+
   database:
       image: "postgres:13"
       container_name: "db_postgres"
@@ -40,6 +41,53 @@ services:
       volumes:
          - postgres:/var/lib/postgresql/data
       restart: unless-stopped
+
+  redis:
+    image: 'redis:7'
+    container_name: 'redis'
+    hostname: 'redis'
+    networks:
+      - backend
+    restart: unless-stopped
+
+  worker1:
+    build: .
+    container_name: 'worker1'
+    hostname: 'worker1'
+    command: >
+      sh -c "cd src && celery -A celery_app.app worker --loglevel=info"
+    networks:
+      - backend
+    environment:
+      - DB_NAME=optimization_app
+      - DB_USER=optimization_app
+      - DB_PASSWORD=12345678
+      - DB_HOST=database
+      - DB_PORT=5432
+      - ADMIN_NAME=adm2
+      - ADMIN_PASSWORD=adm2
+    volumes:
+      - ./src:/service/src
+    depends_on:
+      - redis
+      - database
+    restart: unless-stopped
+
+  flower:
+    build: .
+    hostname: 'flower'
+    container_name: 'flower'
+    command: >
+      sh -c "cd src && celery -A celery_app.app flower"
+    ports:
+      - '5555:5555'
+    networks:
+      - backend
+    volumes:
+      - ./src:/service/src
+    depends_on:
+      - redis
+    restart: unless-stopped
 volumes:
   postgres:
 networks:
