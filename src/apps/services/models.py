@@ -5,7 +5,7 @@ from django.dispatch import receiver
 
 from apps.base.management.commands.createadmin import lg
 from apps.client.models import Client
-from apps.services.tasks import set_price
+from apps.services.tasks import set_price, set_commit
 
 
 class Service(models.Model):
@@ -43,6 +43,7 @@ def set_subscriptions_price(sender, instance, **__) -> None:
     lg.debug(f'Activated post_save signal from {sender.__name__}')
     for subscription in instance.subscriptions.all():
         set_price.delay(subscription.id)
+        set_commit.delay(subscription.id)
 
 
 class Subscription(models.Model):
@@ -53,3 +54,4 @@ class Subscription(models.Model):
     tariff_plan = models.ForeignKey(TariffPlan, models.PROTECT,
                                     related_name='subscriptions')
     price = models.PositiveIntegerField(default=0)
+    commit = models.CharField(default='')

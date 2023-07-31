@@ -52,8 +52,33 @@ services:
 
   worker1:
     build: .
+    image: 'worker1'
     container_name: 'worker1'
     hostname: 'worker1'
+    command: >
+      sh -c "cd src && celery -A celery_app.app worker --loglevel=info"
+    networks:
+      - backend
+    environment:
+      - DB_NAME=optimization_app
+      - DB_USER=optimization_app
+      - DB_PASSWORD=12345678
+      - DB_HOST=database
+      - DB_PORT=5432
+      - ADMIN_NAME=adm2
+      - ADMIN_PASSWORD=adm2
+    volumes:
+      - ./src:/service/src
+    depends_on:
+      - redis
+      - database
+    restart: unless-stopped
+
+  worker2:
+    build: .
+    image: 'worker2'
+    container_name: 'worker2'
+    hostname: 'worker2'
     command: >
       sh -c "cd src && celery -A celery_app.app worker --loglevel=info"
     networks:
