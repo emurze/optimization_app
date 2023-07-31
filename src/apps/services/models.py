@@ -1,6 +1,8 @@
+from django.conf import settings
+from django.core.cache import cache
 from django.core.validators import MaxValueValidator
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from apps.base.management.commands.createadmin import lg
@@ -55,3 +57,17 @@ class Subscription(models.Model):
                                     related_name='subscriptions')
     price = models.PositiveIntegerField(default=0)
     commit = models.CharField(default='')
+
+    def save(self, *args, **kwargs):
+        creating = not bool(self.id)
+        _result = super().save(*args, **kwargs)
+
+        if creating:
+            set_price.delay(self.id)
+
+        return _result
+
+
+@receiver(post_delete, sender=Subscription)
+def delete_price_cache(*_, **__) -> None:
+    cache.delete(settings.PRICE_CACHE_NAME)

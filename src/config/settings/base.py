@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'rest_framework',
     'debug_toolbar',
+    'cachalot',
 
     'apps.base.apps.BaseConfig',
     'apps.client.apps.ClientConfig',
